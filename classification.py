@@ -5,6 +5,8 @@ from os import listdir
 # local modules
 from common import clock, mosaic
 from skimage.feature import hog
+from sklearn.svm import SVC
+import pickle
 
 #Parameter
 SIZE = 32
@@ -37,28 +39,25 @@ def deskew(img):
     return img
 
 class StatModel(object):
-    def load(self, fn):
-        self.model.load(fn) 
-    def save(self, fn):
-        self.model.save(fn)
+    def load(self):
+        filename = 'svc_model.pkl'
+        with open(filename, 'rb') as file:
+            self.model = pickle.load(file)
+
+    def save(self):
+        filename = 'svc_model.pkl'
+        with open(filename, 'wb') as file:
+            pickle.dump(self.model, file)
 
 class SVM(StatModel):
-    def __init__(self, C = 12.5, gamma = 0.50625):
-        self.model = cv2.ml.SVM_create()
-        self.model.setGamma(gamma)
-        self.model.setC(C)
-        self.model.setKernel(cv2.ml.SVM_RBF)
-        self.model.setType(cv2.ml.SVM_C_SVC)
+    def __init__(self, C=12.5, gamma=0.50625):
+        self.model = SVC(C=C, gamma=gamma, kernel='rbf', decision_function_shape='ovr')
 
     def train(self, samples, responses):
-        self.model.train(samples, cv2.ml.ROW_SAMPLE, responses)
+        self.model.fit(samples, responses)
 
     def predict(self, samples):
-        samples = samples.astype(np.float32)
-        print('tttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt\n\n\n')
-        print(samples.tolist(), flush=True)
-        return self.model.predict(samples, cv2.ml.ROW_SAMPLE)[1].ravel()
-
+        return self.model.predict(samples)
 
 def evaluate_model(model, data, samples, labels):
     resp = model.predict(samples)
@@ -80,9 +79,6 @@ def evaluate_model(model, data, samples, labels):
         
         vis.append(img)
     return mosaic(16, vis)
-
-def preprocess_simple(data):
-    return np.float32(data).reshape(-1, SIZE*SIZE) / 255.0
 
 def get_hog() : 
     winSize = (20,20)
@@ -141,13 +137,13 @@ def training():
     model.train(hog_descriptors_train, labels_train)
 
     print('Saving SVM model ...')
-    model.save('data_svm.dat')
+    model.save()
     print(model)
 
     return model
 
     # svm_loaded = SVM()
-    # svm_loaded.load('data_svm.dat')
+    # svm_loaded.load()
     # return svm_loaded
 
 def getLabel(model, data):

@@ -72,7 +72,8 @@ def preprocess_image(image):
 def removeSmallComponents(image, threshold):
     #find all your connected components (white blobs in your image)
     nb_components, output, stats, centroids = cv2.connectedComponentsWithStats(image, connectivity=8)
-    sizes = stats[1:, -1]; nb_components = nb_components - 1
+    sizes = stats[1:, -1]; 
+    nb_components = nb_components - 1
 
     img2 = np.zeros((output.shape),dtype = np.uint8)
     #for every component in the image, you keep it only if it's above threshold
