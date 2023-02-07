@@ -96,7 +96,6 @@ def get_hog() :
 
     hog = cv2.HOGDescriptor(winSize,blockSize,blockStride,cellSize,nbins,derivAperture,winSigma,histogramNormType,L2HysThreshold,gammaCorrection,nlevels, signedGradient)
     return hog
-    affine_flags = cv2.WARP_INVERSE_MAP|cv2.INTER_LINEAR
 
 
 def training():
